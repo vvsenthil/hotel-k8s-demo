@@ -27,8 +27,10 @@ kind: Service
 metadata:
   name: hotel-k8s-demo
 spec:
+  type: LoadBalancer
   ports:
-    - targetPort: 8080
+    - protocol: TCP
       port: 80
+      targetPort: 8080
   selector:
     app: hotel-k8s-demo
