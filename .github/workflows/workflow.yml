@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: SpringBoot CI/CD Pipeline
+name: Hotel MicroService CI/CD Pipeline
 
 on:
   push:
@@ -30,11 +30,24 @@ jobs:
         server-username: MAVEN_USERNAME
         server-password: MAVEN_PASSWORD   
         
-    - name: Building and Pushing hotel-k8s-demo
+    - name: Building and Pushing api-gateway
       run: mvn package dockerfile:push --file hotel-k8s-demo/pom.xml
       env:
           MAVEN_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}  
-        
+          
 
- 
+  Deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: kubectl - Google Cloud GKE cluster.
+      uses: ameydev/gke-kubectl-action@master
+      env:
+        PROJECT_ID: ${{ env.PROJECT_ID }}
+        APPLICATION_CREDENTIALS: ${{ secrets.GKE_SA_KEY }}
+        CLUSTER_NAME: ${{ env.GKE_CLUSTER }}
+        ZONE_NAME: ${{ env.GKE_ZONE }}
+      with:
+        args: apply -f k8s/
